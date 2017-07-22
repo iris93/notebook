@@ -1,1 +1,35 @@
 #此文档介绍如何安装gitosis来配置git服务器
+1.install gitosis
+git clone git://github.com/res0nat0r/gitosis.git
+cd gitosis
+python setup.py install
+
+2.setting up (git库的位置可自行修改)
+sudo adduser \
+    --system \
+    --shell /bin/sh \
+    --gecos 'git version control' \
+    --group \
+    --disabled-password \
+    --home /srv/example.com/git \
+    git
+sudo -iu git （进入git，下面两句都在git中进行）
+git $ gitosis-init <FILENAME.pub （这里用的是git的admin用户的公钥，该用户有后续更改gitosis-admin.git的权限）
+git $ exit
+
+3.成员管理
+admin用户首先要将gitosis-admin.git克隆到本地
+  --keydir文件夹用于防止可以访问该git server的用户的公钥(可以重命名)
+  --gitosis.conf,配置文件，用于控制成员的项目访问权限，成员名与keydir中文件名相同(不带.pub),名称之间用空格隔开，如：
+    [group myteam]
+    members = jdoe iris
+    writable = myproject
+修改完成后提交修改到server即可。
+
+4.新建项目
+  mkdir myproject
+  cd mypyroject
+  git init
+  git remote add origin git@MYSERVER:myproject.git
+  # do some work, git add and commit files
+  git push origin master:refs/heads/master
