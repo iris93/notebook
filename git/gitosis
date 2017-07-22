@@ -32,4 +32,4 @@ admin用户首先要将gitosis-admin.git克隆到本地
   git init
   git remote add origin git@MYSERVER:myproject.git
   # do some work, git add and commit files
-  git push origin master:refs/heads/master
+  git push -u origin master
