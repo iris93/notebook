@@ -1,0 +1,16 @@
+#常用git命令备忘
+
+git status:查看工作区状态
+
+git diff：查看具体修改了什么内容
+
+git log:从最近到最远查看git commit 的记录(commit id +描述)
+git log --pretty=oneline： （优化显示，一行显示一条commit记录）
+
+git reset --hard HEAD^：  (版本回退，commit id的前几位即可，不必写全)
+
+git reflog：在回退后依然可以查询到所有的历史（即回退这一过程也已经被记录）
+
+git checkout -- filename.txt:可以丢弃工作区的修改，git add命令未执行前（删除错了可以用这条命令来恢复文件）
+
+git rm filename.txt：删除文件
