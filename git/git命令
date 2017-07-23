@@ -14,3 +14,11 @@ git reflog：在回退后依然可以查询到所有的历史（即回退这一�
 git checkout -- filename.txt:可以丢弃工作区的修改，git add命令未执行前（删除错了可以用这条命令来恢复文件）
 
 git rm filename.txt：删除文件
+
+
+#############################    分支管理   #############################
+git checkout -b dev:新建dev分支，git checkout 命令加上-b参数表示创建并切换，相当于以下两条命令：
+git branch dev：新建dev分支
+git checkout dev：切换到dev分支
+
+git branch：列出所有分支，当前分支前面会有一个*号
