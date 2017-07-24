@@ -1,0 +1,67 @@
+1.安装gitweb,apache2
+
+sudo apt-get install gitweb apache2
+
+2.修改/etc/gitweb.conf
+
+vim /etc/gitweb.conf
+
+
+内容如下：
+
+$projectroot = "/home/Git/repositories";
+
+
+$git_temp = "/tmp";
+
+
+$projects_list = $projectroot;
+
+
+@stylesheets = ("../gitweb/static/gitweb.css");
+
+
+$JavaScript = "../gitweb/static/gitweb.js";
+
+
+$logo = "../gitweb/static/git-logo.png";
+
+
+$favicon = "../gitweb/static/git-favicon.png";
+
+
+@diff_opts = ();
+
+
+保存退出
+
+3.修改/etc/apache2/conf-available/gitweb.conf
+
+
+vim /etc/apache2/conf-available/gitweb.conf
+
+
+内容如下：
+
+
+Alias /gitweb /usr/share/gitweb
+
+
+<Directory /usr/share/gitweb>
+Options +FollowSymLinks +ExecCGI
+AddHandler cgi-script .cgi
+</Directory>
+
+
+保存退出
+
+4.使cgi生效
+sudo a2enmod cgi
+
+sudo service apache2 restart
+
+5.访问http://localhost/cgi-bin/gitweb.cgi就可看到git的项目信息
+
+注意
+
+旧版本的/etc/apache2/conf.d/gitweb和新版本的/etc/apache2/conf-available/gitweb的是同一个目录。

@@ -30,5 +30,5 @@
 
 #sudo apt-get install libapache2-mod-python
 #a2enmod python
-#a2ensite trac_test
+#a2ensite trac_test   #a2dissite命令关闭网页
 #service apache2 restart
