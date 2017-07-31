@@ -1,0 +1,224 @@
+http://blog.csdn.net/windghoul/article/details/52655032#comments
+2017/6/21更新 在安装完毕之后，请在 /usr/local/Hadoop/hadoop-2.7.3 路径下创建logs文件夹并且改变权限为777
+
+9-26重要更新：本文所有命令都来源于实机复制，可能在粘贴复制的过程中会出现未知的错误，所以请将命令全部手动输入，谢谢。
+
+最近听了一个关于大数据的大牛的经验分享，在分享的最后大牛给我们一个他之前写好的关于大数据和地理应用demo。这个demo需要在Linux环境上搭建Hadoop平台。这次就简单的分享一下我关于在
+linux虚拟机上搭建Hadoop平台的一些经验和遇到的一些问题以及问题的解决办法。
+
+首先我们这次搭建的环境是hadoop。hadoop实现了分布式文件系统，它可以部署在一些廉价的硬件环境上，并且提供了高吞吐量来访问应用程序的数据，非常适合那些有着大数据集的应用程序。而且最重要的是，hadoop是开源的。
+
+这次我们将要在一台计算机（虚拟机）上安装我们的hadoop实验环境。如果你还没有安装虚拟机，请百度查看VMware workstations Pro 12的安装教程。如果你还没有在虚拟机中安装Linux操作系统，请百度在VMware下安装Ubuntu或者centos的教程。
+
+安装的模式是单机模式和伪分布模式。单机模式是在hadoop解压缩之后默认选择的最精简模式，在这个模式中，core-site.xml ，hdfs-site.xml和hadoop-env.sh中的配置信息默认为空，在安装时需要我们自己去配置填写。伪分布模式就是hadoop运行在单集群上，这个模式比单机模式多了代码调试功能，并且启用了HDFS功能而且能够和几个守护进程进行交互
+
+本文中安装的是Ubuntu16.04LTS+Java 1.8.0_101+Hadoop 2.7.3
+
+一、Linux上Java环境的安装
+
+首先在Linux上安装hadoop之前我们需要了解，hadoop是基于java开发的一款程序。所以我们需要在安装hadoop之前保证我们的Linux上有java环境。下面我们就来介绍一些如何在Linux上安装java1.8.0_101。
+
+在安装java之前我们需要检查系统中有没有安装java,使用java -version命令来查看是否安装了java，如果安装了其他版本的java请在卸载之后安装java1.8.0。
+
+首先我们需要在Oracle官网上下载我们需要的JDK安装包，JDK就是java Development Kit 这个开发工具中包含了java运行所必须的运行环境。你可以在这个网址中下载到本文所述的java1.8.0_101的Linux版本安装包，注意在下载安装包的时候请选择适合你的操作系统版本的位数文件进行下载（这里的操作系统指的是你的虚拟机中安装的Linux的版本，可以通过uname -a指令来查看你当前的Linux版本）
+
+www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+在完成下载之后，我们将得到一个后缀名为.tar.gz的压缩包，这时我们将这个文件解压缩到/usr/java/目录下(请在解压缩之前新建这个目录)
+
+tar -zxvf jdk-8u101-linux-x64.tar.gz -C /usr/java/
+
+在解压缩之后我们就可以配置我们的环境变量了
+
+vim ~/.bashrc
+
+#写入环境变量
+
+export JAVA_HOME=/usr/java/jdk1.8.0_101
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+export PATH=$JAVA_HOME/bin:$PATH
+
+在写完环境变量之后使用
+
+source ~/.bashrc
+
+来使环境变量生效
+
+在配置完之后我们利用
+
+java -version
+
+来查看java是否安装完毕。
+
+二、安装ssh server 实现免密码登录
+
+因为Hadoop需要使用ssh进行通信，所以我们需要在我们的操作系统上安装ssh。在安装之前，我们需要查看系统是否已经安装并且启动了ssh
+
+#查看ssh安装包情况
+dpkg -l | grep ssh
+
+#查看是否启动ssh服务
+ps -e | grep ssh
+
+如果系统中并没有ssh服务，可以使用
+
+sudo apt-get install openssh-server
+
+来安装ssh服务，在安装之后使用
+
+sudo /etc/init.d/ssh start
+
+开启服务。
+
+之后再使用
+
+ps -e | grep ssh
+
+来查看服务是否启动。
+
+ssh作为一个安全通信协议，自然就需要通信的时候输入密码，但是因为我们伪分布模式，所以我们将设置免密码登录。
+
+#生成秘钥
+ssh-keygen -t dsa -P '' -f ~/.ssh/id_dsa
+#导入authorized_keys
+cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+
+#测试是否免密码登录localhost
+ssh localhost
+
+在结束之后关闭机器的防火墙
+ufw disable
+
+三、安装Hadoop
+
+在结束了前期的准备工作之后我们可以开始安装我们的Hadoop了
+
+下载Hadoop 下面提供了Hadoop的下载链接
+
+http://hadoop.apache.org/releases.html
+
+下载binary
+
+解压缩下载之后的文件
+
+tar -zxvf hadoop-2.7.3 -C /usr/local/hadoop/
+
+在解压缩之间请创建/usr/local/hadoop/目录(需要将hadoop的所有者改为当前用户，sudo chown -R iris hadoop/)
+
+下面来写配置文件core-site.xml、hdfs-site.xml、hadoop-env.sh三个文件
+
+这三个文件都在/usr/local/hadoop/hadoop-2.7.3/etc/hadoop/下，在前两个文件中的和中写入如下内容
+
+第一个文件core-site.xml
+
+core-site.xml
+ <!-- 指定HDFS老大（namenode）的通信地址 -->
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://localhost:9000</value>
+    </property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/home/windghoul/tmp</value>
+    </property>
+
+请注意/home/windghoul/tmp文件夹要被替换为计算机当前的用户目录中的tmp文件夹没有请创建
+
+第二个文件hdfs-site.xml
+
+hdfs-site.xml
+ <!-- 设置hdfs副本数量 -->
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+    </property>
+
+第三个文件hadoop-env.sh中找到如下行然后写入内容
+
+# The java implementation to use.
+export JAVA_HOME=/usr/java/jdk1.8.0_101
+export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.3
+export PATH=$PATH:/usr/local/hadoop/hadoop-2.7.3/bin
+
+接下来在系统环境变量中写入Hadoop的环境变量
+vim /etc/environment
+
+#在文件的结尾""之内加上
+:/usr/local/hadoop/hadoop-2.7.3/bin
+:/usr/local/hadoop/hadoop-2.7.3/sbin
+
+重启系统
+
+验证Hadoop单机模式安装完成
+
+hadoop version
+
+看到屏幕上显示hadoop的版本号即说明单机模式已经配置完成
+
+接下来就是启动hdfs 使用伪分布模式
+
+第一步格式化
+
+hadoop namenode -format
+
+显示如下内容即成功格式化
+
+...
+...
+16/09/24 23:39:53 INFO common.Storage: Storage directory /home/windghoul/tmp/dfs/name has been successfully formatted.
+...
+...
+/************************************************************
+SHUTDOWN_MSG: Shutting down NameNode at ubuntu/127.0.1.1
+************************************************************/
+
+用当前用户启动hdfs
+
+sudo -u iris sbin/start-all.sh
+
+显示进程
+
+jps
+
+看到屏幕上显示如下内容即说明hdfs已经成功
+.................
+iris@lab:/usr/local/hadoop/hadoop-2.7.3$ jps
+12580 DataNode
+13222 Jps
+12778 SecondaryNameNode
+12427 NameNode
+13102 NodeManager
+.................
+
+这里写图片描述
+
+停止hdfs
+
+sbin/stop-all.sh
+
+以上命令行都需要系统路径在hadoop安装路径之下，如果在/home/username下运行，请输入完全路径。
+
+这样我们的hadoop环境就基本搭建完毕，之后我还会写一些关于hadoop的简单应用的分享。
+
+问题解决
+
+Q：我在配置完文件之后在命令行中输入hadoop version并没有显示hadoop的版本号
+
+A:请检查环境变量的配置，尤其是有没有写入hadoop的环境变量，检查/etc/environment下
+并且重启您的计算机。
+
+Q：在格式化那里我没有正确的格式化
+A：如问题1，在格式化之前请检查hadoop单机模式有没有正确的安装并配置，检查core-site.xml文件有没有正确的配置
+
+Q：在最后启动hdfs的时候总是提醒我输入localhost的密码
+A：如果提醒输入密码可能是tmp文件夹的拥有者权限不对，请使用chmod -R a+w /home/windghoul/tmp可能就会解决。
+
+在最后感谢网络上的几位大牛给的之前版本的安装教程
+
+http://www.aboutyun.com/thread-7684-1-1.html
+
+http://www.aboutyun.com/thread-6487-1-1.html
+
+http://blog.csdn.net/uq_jin/article/details/51451995
+
+http://blog.csdn.net/hitwengqi/article/details/8008203
