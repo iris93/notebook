@@ -60,7 +60,7 @@ sudo a2enmod cgi
 
 sudo service apache2 restart
 
-5.访问http://localhost/cgi-bin/gitweb.cgi就可看到git的项目信息
+5.访问http://localhost/cgi-bin/gitweb.cgi就可看到git的项目信息也可以访问： http://127.0.0.1/gitweb/
 
 注意
 
