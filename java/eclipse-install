@@ -1,0 +1,15 @@
+主要过程参考此博客：
+http://blog.csdn.net/jeffery_gong/article/details/52733086
+
+
+其中eclipse安装参考
+http://blog.csdn.net/bai_yechuang2012/article/details/51669139
+在建立桌面快捷方式图标上时记得文件生成时不加sudo
+
+
+note：解决ubuntu16.04上eclipse卡死的问题
+原因：GTK3引起的
+解决办法：通过vi编辑eclipse.ini，在--launcher.appendVmargs上面一行行添加：
+
+--launcher.GTK_version
+2
