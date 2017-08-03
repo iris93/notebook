@@ -1,0 +1,16 @@
+java中@的含义：
+@是批注
+批注是用于Java语言的本机元数据标记。它们的输入严格与Java语言的其他部分类似，可以通过反映被发现，更容易地让IDE和编译器的编写者管理。
+批注能够消除样板代码，让源代码的可读性更高，并能提供级别更高的错误检查。从EJB3到JUnit4，哪里都在使用它。
+
+Junit4：单元测试
+
+spring-boot工程启动的几种方式：
+1.快速启动：mvn spring-boot:run
+
+2.在服务器上部署：
+打包成jar：   mvn install（生成的文件在target文件夹里面）
+运行：        java -jar xxx.jar
+指定dev环境运行： java -jar xxx.jar --spring.profiles.active=dev
+
+3.直接运行java主类
