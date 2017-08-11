@@ -1,0 +1,33 @@
+mysql安装
+sudo apt-get install mysql-server
+sudo apt-get install mysql-client
+sudo apt-get install libmysqlclient-dev
+查看是否安装成功：sudo netstat -tap | grep mysql
+
+启动：sudo /ect/init.d/mysql start
+进入：mysql -u root -p
+退出：quit(), 或者 ctrl+D
+显示：show databases
+创建：create database test
+使用：use test
+显示表：show tables
+显示字段及非空信息：desc tabelname
+导入.sql文件：source:数据/借书信息-电信.sql
+mysql调整字段属性:alter table expert_info change birth birth varchar(20) null;
+清空表数据：delete from i02_stu_lib_lend_info;
+执行删除命令，使用drop关键字。
+基本的语法为：alter table <表名> drop column <字段名>;
+修改表名：alter table table_name rename table_new_name;
+删除表： DROP TABLE table_name;
+
+查看表中十条信息：select * from tablename limit 10 ORDER BY fields ASC
+                                                                                                             DESC 降序
+选择字段并输出：select time, valve_pressure1 from P0 where t0_id = 280000 and time REGEXP '2014-09' into outfile '/tmp/valpre1.txt' fields terminated by ';' enclosed by '"' lines terminated by'\r\n';
+    scp chenlb@120.26.105.20:/tmp/valpre3 data.txt
+查看mysql全局编码格式：mysql>show variables like 'character%'
+将服务器编码改为utf-8:mysql>set character_set_server=utf8
+正则表达式：
+    where fields REGEXR '^st'     #以st开头
+    where fields REGEXR 'ok$'       #以ok结尾
+    where fields REGEXR 'mar'       #包含mar
+    where fields REGEXR '^[aeiou]|ok$'     #以元音字母开头且以ok结尾

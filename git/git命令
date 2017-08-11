@@ -26,6 +26,9 @@ git checkout -b dev:新建dev分支，git checkout 命令加上-b参数表示创
 git branch dev：新建dev分支
 git checkout dev：切换到dev分支
 
+建立远程分之与本地分支的联系
+git push origin dev-iris:dev-iris
+
 git branch：列出所有分支，当前分支前面会有一个*号
 
 git checkout master:切换到dev分支
