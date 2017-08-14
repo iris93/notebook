@@ -1,0 +1,76 @@
+Python中下划线---完全解读
+
+Python 用下划线作为变量前缀和后缀指定特殊变量
+
+_xxx 不能用’from module import *’导入
+
+__xxx__ 系统定义名字
+
+__xxx 类中的私有变量名
+
+核心风格：避免用下划线作为变量名的开始。
+
+因为下划线对解释器有特殊的意义，而且是内建标识符所使用的符号，我们建议程序员避免用下划线作为变量名的开始。
+一般来讲，变量名_xxx被看作是“私有 的”，在模块或类外不可以使用。
+当变量是私有的时候，用_xxx 来表示变量是很好的习惯。
+因为变量名__xxx__对python 来说有特殊含义，对于普通的变量应当避免这种命名风格。
+
+“单下划线” 开始的成员变量叫做保护变量，意思是只有类对象和子类对象自己能访问到这些变量；
+“双下划线” 开始的是私有成员，意思是只有类对象自己能访问，连子类对象也不能访问到这个数据。
+
+以单下划线开头（_foo）的代表不能直接访问的类属性，需通过类提供的接口进行访问，不能用“from xxx import *”而导入；
+以双下划线开头的（__foo）代表类的私有成员；以双下划线开头和结尾的（__foo__）代表python里特殊方法专用的标识，
+如 __init__（）代表类的构造函数。
+
+现在我们来总结下所有的系统定义属性和方法， 先来看下保留属性：
+
+>>> Class1.__doc__ # 类型帮助信息 'Class1 Doc.'
+>>> Class1.__name__ # 类型名称 'Class1'
+>>> Class1.__module__ # 类型所在模块 '__main__'
+>>> Class1.__bases__ # 类型所继承的基类 (<type 'object'>,)
+>>> Class1.__dict__ # 类型字典，存储所有类型成员信息。 <dictproxy object at 0x00D3AD70>
+>>> Class1().__class__ # 类型 <class '__main__.Class1'>
+>>> Class1().__module__ # 实例类型所在模块 '__main__'
+>>> Class1().__dict__ # 对象字典，存储所有实例成员信息。 {'i': 1234}
+
+接下来是保留方法，可以把保留方法分类：
+
+类的基础方法
+序号 	目的 	所编写代码 	Python 实际调用
+① 	初始化一个实例 	x = MyClass() 	x.__init__()
+② 	字符串的“官方”表现形式 	repr(x) 	x.__repr__()
+③ 	字符串的“非正式”值 	str(x) 	x.__str__()
+④ 	字节数组的“非正式”值 	bytes(x) 	x.__bytes__()
+⑤ 	格式化字符串的值 	format(x, format_spec) 	x.__format__(format_spec)
+
+对 __init__() 方法的调用发生在实例被创建 之后 。如果要控制实际创建进程，请使用 __new__() 方法。
+按照约定， __repr__() 方法所返回的字符串为合法的 Python 表达式。
+在调用 print(x) 的同时也调用了 __str__() 方法。
+由于 bytes 类型的引入而从 Python 3 开始出现。
+
+计算属性
+序号 	目的 	所编写代码 	Python 实际调用
+① 	获取一个计算属性（无条件的） 	x.my_property 	x.__getattribute__('my_property')
+② 	获取一个计算属性（后备） 	x.my_property 	x.__getattr__('my_property')
+③ 	设置某属性 	x.my_property = value 	x.__setattr__('my_property',value)
+④ 	删除某属性 	del x.my_property 	x.__delattr__('my_property')
+⑤ 	列出所有属性和方法 	dir(x) 	x.__dir__()
+
+
+如果某个类定义了 __getattribute__() 方法，在 每次引用属性或方法名称时 Python 都调用它（特殊方法名称除外，因为那样将会导致讨厌的无限循环）。
+如果某个类定义了 __getattr__() 方法，Python 将只在正常的位置查询属性时才会调用它。如果实例 x 定义了属性color， x.color 将 不会 调用x.__getattr__('color')；而只会返回x.color 已定义好的值。
+无论何时给属性赋值，都会调用 __setattr__() 方法。
+无论何时删除一个属性，都将调用 __delattr__() 方法。
+如果定义了 __getattr__() 或 __getattribute__() 方法， __dir__() 方法将非常有用。通常，调用 dir(x) 将只显示正常的属性和方法。如果 __getattr()__方法动态处理color 属性， dir(x) 将不会将 color 列为可用属性。可通过覆盖 __dir__() 方法允许将 color 列为可用属性，对于想使用你的类但却不想深入其内部的人来说，该方法非常有益。
+
+
+序号 	目的 	所编写代码 	Python 实际调用
+  	序列的长度 	len(seq) 	seq.__len__()
+  	了解某序列是否包含特定的值 	x in seq 	seq.__contains__(x)
+
+
+序号 	目的 	所编写代码 	Python 实际调用
+  	通过键来获取值 	x[key] 	x.__getitem__(key)
+  	通过键来设置值 	x[key] = value 	x.__setitem__(key,value)
+  	删除一个键值对 	del x[key] 	x.__delitem__(key)
+  	为缺失键提供默认值 	x[nonexistent_key] 	x.__missing__(nonexistent_key)
